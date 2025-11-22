@@ -6,8 +6,8 @@ on:
       - dev
 
 jobs:
-    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest
   terraform:
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest
     runs-on: ubuntu-latest
 
     permissions:
@@ -18,37 +18,39 @@ jobs:
       TF_CLI_ARGS: "-input=false"
 
     steps:
-	# Checkout the repository to the GitHub Actions runner
+      # Checkout the repository to the GitHub Actions runner
       - name: Checkout
         uses: actions/checkout@v4
-    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+      # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-    # Example: AWS OIDC authentication
+      # Example: AWS OIDC authentication
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           aws-region: ap-south-1
-	# Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+      # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
       - name: Terraform Init
         run: terraform init
-	# Create or Select work space dev environment
+      # Create or Select work space dev environment
       - name: Select Workspace
         run: |
           if [[ "${{ github.ref_name }}" == "dev" ]]; then
             terraform workspace select dev || terraform workspace new dev
+          fi
 
       - name: Terraform Validate
         run: |
           terraform fmt -check
           terraform validate
-	 # Generates an execution plan for Terraform
+      # Generates an execution plan for Terraform
       - name: Terraform Plan
         run: |
           if [[ "${{ github.ref_name }}" == "dev" ]]; then
             terraform plan -var-file=environments/dev/terraform.tfvars -out=plan.tfplan
+          fi
 
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
